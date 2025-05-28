@@ -1,0 +1,15 @@
+# Ignore node_modules in both
+backend/node_modules/
+frontend/node_modules/
+
+# Ignore env files
+backend/.env
+frontend/.env
+
+# Ignore build output
+frontend/dist/
+backend/build/
+
+# OS or misc
+.DS_Store
+*.log
