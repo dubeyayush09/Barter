@@ -21,7 +21,9 @@ const Chat = () => {
     if (socket) {
       // Listen for incoming messages
       socket.on("receiveMessage", (newMessage) => {
-        setMessages((prev) => [...prev, newMessage]);
+        // setMessages((prev) => [...prev, newMessage]);
+        console.log("message received from server ",newMessage);
+        console.log("set message contains  ",messages);
         scrollToBottom();
       });
 
@@ -98,8 +100,6 @@ const Chat = () => {
 
     // Add to local messages immediately
     setLocalMessages((prev) => [...prev, tempMessage]);
-    setMessages((prev) => [...prev, tempMessage]);
-    scrollToBottom();
 
     const messageData = {
       chatId: currentChat._id,
@@ -111,16 +111,13 @@ const Chat = () => {
     setMessage("");
 
     socket.emit("sendMessage", messageData, (response) => {
+      console.log("message sent ",messageData)
       if (response.success) {
         // Remove temporary message and add confirmed message
         setLocalMessages((prev) =>
           prev.filter((msg) => msg._id !== tempMessage._id)
         );
-        // setMessages((prev) =>
-        //   prev
-        //     .filter((msg) => msg._id !== tempMessage._id)
-        //     .concat(response.message)
-        // );
+        setMessages((prev) => [...prev, response.message]);
         scrollToBottom();
       }
     });
@@ -141,11 +138,19 @@ const Chat = () => {
 
     socket.emit("startChat", userId, (response) => {
       if (response.success) {
-        setChats((prev) => [...prev, response.chat]);
+        const newChat=response.chat;
+        setChats((prev) => {
+          const exists=prev.find((c)=>c._id===newChat._id);
+          if(exists) return prev;
+          return [...prev,newChat];})
         setSearchResults([]);
         setSearchTerm("");
       }
     });
+  };
+
+  const isCurrentUserMessage = (senderId) => {
+    return senderId === user?._id;
   };
 
   return (
@@ -280,16 +285,23 @@ const Chat = () => {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4">
-                {messages.map((msg, index) => (
+                {[...messages, ...localMessages].map((msg, index) => {
+                    // console.log("Current user ID:", user?._id);
+                    // console.log("Message sender ID:", msg.sender);
+
+                  return (
+                  
                   <div
                     key={msg._id || index}
                     className={`flex mb-4 ${
-                      msg.sender === user?._id ? "justify-end" : "justify-start"
+                      isCurrentUserMessage(msg.sender._id)
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
                   >
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        msg.sender === user?._id
+                        isCurrentUserMessage(msg.sender._id)
                           ? "bg-primary-500 text-black ml-auto"
                           : "bg-gray-100 text-gray-900 mr-auto"
                       } ${msg.isLocal ? "opacity-70" : ""}`}
@@ -300,7 +312,7 @@ const Chat = () => {
                       </p>
                     </div>
                   </div>
-                ))}
+                )})}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -315,7 +327,7 @@ const Chat = () => {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:border-primary-500"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:border-primary-500 text-gray-900"
                   />
                   <button
                     type="submit"

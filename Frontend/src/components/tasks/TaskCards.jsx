@@ -1,11 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Calendar, User, Tag } from "lucide-react";
+import { Calendar, User, Tag, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { TASK_STATUS_COLORS, TASK_STATUS_LABELS } from "../../config/constants.js";
+import { TASK_STATUS_COLORS, TASK_STATUS_LABELS } from "../../config/constants";
+import { useAuth } from "../../hooks/useAuth";
+import { useTask } from "../../hooks/useTask";
 
 const TaskCard = ({ task }) => {
-  // Format date to be more readable
+  // console.log("wer are at taskcard ",  task)
+  const { user } = useAuth();
+  const { requestTask } = useTask();
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -15,10 +20,24 @@ const TaskCard = ({ task }) => {
     });
   };
 
-  // Truncate description
   const truncateDescription = (text, maxLength = 100) => {
     if (text.length <= maxLength) return text;
     return text.substr(0, maxLength) + "...";
+  };
+
+  const hasRequested = task.requestedBy?.some(
+    (requester) => requester._id === user?._id
+  );
+  const isCreator = task.createdBy._id === user?._id;
+
+  const handleRequestTask = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await requestTask(task._id);
+    } catch (error) {
+      console.error("Failed to request task:", error);
+    }
   };
 
   return (
@@ -91,13 +110,37 @@ const TaskCard = ({ task }) => {
         </div>
       </div>
 
-      <div className="bg-neutral-50 px-5 py-3 border-t border-neutral-200">
+      <div className="bg-neutral-50 px-5 py-3 border-t border-neutral-200 flex justify-between items-center">
         <Link
           to={`/tasks/${task._id}`}
           className="text-primary-600 font-medium text-sm hover:text-primary-700"
         >
           View Details
         </Link>
+
+        {task.status === "open" && !isCreator && !task.assignedTo && (
+          <button
+            onClick={handleRequestTask}
+            disabled={hasRequested}
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              hasRequested
+                ? "bg-neutral-100 text-neutral-500 cursor-not-allowed"
+                : "bg-primary-600 text-black hover:bg-primary-700"
+            }`}
+          >
+            {hasRequested ? "Requested" : "Request Task"}
+          </button>
+        )}
+
+        {task.status === "open" &&
+          task.requestedBy?.length > 0 &&
+          isCreator && (
+            <div className="flex items-center text-sm text-neutral-600">
+              <AlertCircle size={16} className="mr-1" />
+              {task.requestedBy.length} request
+              {task.requestedBy.length !== 1 ? "s" : ""}
+            </div>
+          )}
       </div>
     </motion.div>
   );

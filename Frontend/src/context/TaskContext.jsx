@@ -2,6 +2,7 @@ import React, {useCallback, createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config/constants";
 import { useAuth } from "../hooks/useAuth";
+import { useSocket } from "../hooks/useSocket";
 
 export const TaskContext = createContext({
   tasks: [],
@@ -15,6 +16,7 @@ export const TaskContext = createContext({
   updateTask: async () => ({}),
   deleteTask: async () => {},
   requestTask: async () => {},
+  assignTask: async () => {},
   completeTask: async () => {},
   cancelTask: async () => {},
   disputeTask: async () => {},
@@ -27,6 +29,7 @@ export const TaskProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { isAuthenticated, user } = useAuth();
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,6 +37,32 @@ export const TaskProvider = ({ children }) => {
       // console.log(tasks)
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("taskUpdated", (updatedTask) => {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task._id === updatedTask._id ? updatedTask : task
+          )
+        );
+        setUserTasks((prev) =>
+          prev.map((task) =>
+            task._id === updatedTask._id ? updatedTask : task
+          )
+        );
+        setAssignedTasks((prev) =>
+          prev.map((task) =>
+            task._id === updatedTask._id ? updatedTask : task
+          )
+        );
+      });
+
+      return () => {
+        socket.off("taskUpdated");
+      };
+    }
+  }, [socket]);
 
   const fetchTasks = async () => {
     try {
@@ -60,7 +89,7 @@ export const TaskProvider = ({ children }) => {
       // setUserTasks(userTasksRes.data);
       setAssignedTasks(assignedTasksRes.data);
 
-      console.log(tasks)
+      // console.log(tasks)
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch tasks");
     } finally {
@@ -169,12 +198,41 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
+
+  const assignTask = async (taskId, userId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await axios.post(`${API_URL}/api/tasks/${taskId}/assign`, {
+        userId,
+      });
+
+      const updatedTask = res.data;
+      setTasks(tasks.map((task) => (task._id === taskId ? updatedTask : task)));
+      setUserTasks(
+        userTasks.map((task) => (task._id === taskId ? updatedTask : task))
+      );
+      if (userId === user?._id) {
+        setAssignedTasks([...assignedTasks, updatedTask]);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to assign task");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const completeTask = async (id) => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await axios.post(`${API_URL}/api/tasks/${id}/complete`);
+      const res = await axios.post(
+        `${API_URL}/api/tasks/${id}/confirm-completion`
+      );
       const updatedTask = res.data;
 
       setTasks((prev) =>
@@ -260,6 +318,7 @@ export const TaskProvider = ({ children }) => {
         updateTask,
         deleteTask,
         requestTask,
+        assignTask,
         completeTask,
         cancelTask,
         disputeTask,

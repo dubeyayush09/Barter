@@ -49,6 +49,20 @@ const TaskSchema = new mongoose.Schema(
     deadline: {
       type: Date,
     },
+    escrowAmount: {
+      type: Number,
+      default: 0,
+    },
+    completionConfirmation: {
+      creator: {
+        type: Boolean,
+        default: false,
+      },
+      performer: {
+        type: Boolean,
+        default: false,
+      },
+    },
     dispute: {
       reason: {
         type: String,

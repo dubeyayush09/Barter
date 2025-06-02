@@ -16,7 +16,7 @@ import Chat from "./models/Chat.js";
 import User from "./models/User.js";
 
 // Load environment variables
-dotenv.config();
+dotenv.config(); 
 
 // Create Express app
 const app = express();
@@ -29,7 +29,7 @@ app.use(express.json());
 // MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/creata")
-  .then(() => console.log("MongoDB connected"))
+  .then(() => console.log("MongoDB connect Nahi hua..thik se kar KUNJ LODE"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
@@ -56,6 +56,7 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"],
   },
 });
+app.set("io", io);
 
 // Socket.IO middleware for authentication
 io.use(verifySocketToken);
@@ -214,7 +215,7 @@ io.on("connection", (socket) => {
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`BKL KUNJ ARORA Server running on port ${PORT}`);
 });
 
 export default app;

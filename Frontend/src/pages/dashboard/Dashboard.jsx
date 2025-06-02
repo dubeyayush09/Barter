@@ -224,7 +224,7 @@ const Dashboard = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.3 }}
-        className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl shadow-lg p-6 text-white mb-10"
+        className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl shadow-lg p-6 text-black mb-10"
       >
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="mb-4 md:mb-0">
@@ -237,7 +237,7 @@ const Dashboard = () => {
           </div>
           <Link
             to="/tasks/create"
-            className="bg-white text-primary-600 px-5 py-2 rounded-md shadow-sm font-medium hover:bg-primary-50 transition duration-150 flex items-center"
+            className="bg-white text-black-600 px-5 py-2 rounded-md shadow-sm font-medium hover:bg-primary-50 transition duration-150 flex items-center"
           >
             <PlusCircle size={18} className="mr-2" />
             Create a Task
@@ -272,7 +272,7 @@ const Dashboard = () => {
             </p>
             <Link
               to="/tasks/create"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-primary-600 hover:bg-primary-700"
             >
               <PlusCircle size={16} className="mr-2" />
               Create a Task
