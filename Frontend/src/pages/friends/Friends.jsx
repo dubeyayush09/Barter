@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {API_URL} from "../../config/constants"
 import { Search, UserPlus, Check, X, Users } from "lucide-react";
 
 const Friends = () => {
@@ -17,7 +18,7 @@ const Friends = () => {
 
   const fetchFriends = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/friends", {
+      const response = await axios.get(`${API_URL}/api/friends`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -31,7 +32,7 @@ const Friends = () => {
   const fetchFriendRequests = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/friends/requests",
+        `${API_URL}/api/friends/requests`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -49,7 +50,7 @@ const Friends = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/users/search?q=${searchTerm}`,
+        `${API_URL}/api/users/search?q=${searchTerm}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -67,7 +68,7 @@ const Friends = () => {
   const sendFriendRequest = async (userId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/friends/request/${userId}`,
+        `${API_URL}/api/friends/request/${userId}`,
         {},
         {
           headers: {
@@ -85,7 +86,7 @@ const Friends = () => {
   const handleFriendRequest = async (requestId, status) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/friends/request/${requestId}`,
+        `${API_URL}/api/friends/request/${requestId}`,
         { status },
         {
           headers: {

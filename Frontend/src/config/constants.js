@@ -1,6 +1,6 @@
 // API endpoints
-export const API_URL = "http://localhost:5000";
-export const SOCKET_URL = "http://localhost:5000";
+export const API_URL = import.meta.env.VITE_API_URL || "https://xchangeup.onrender.com";
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "https://xchangeup.onrender.com";
 
 // Default skill options
 export const SKILL_OPTIONS = [
