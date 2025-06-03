@@ -169,13 +169,13 @@ const Navbar = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-primary-500 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors duration-150"
+                  className="px-4 py-2 text-sm font-medium text-black bg-primary-500 hover:bg-primary-600 rounded-md shadow-sm transition-colors duration-150"
                 >
                   Log in
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-md shadow-sm transition-colors duration-150"
+                  className="px-4 py-2 text-sm font-medium text-black bg-primary-500 hover:bg-primary-600 rounded-md shadow-sm transition-colors duration-150"
                 >
                   Sign up
                 </Link>
