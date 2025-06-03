@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(
   cors({
-    origin: "https://barter-chi.vercel.app", // your frontend domain
+    origin: "http://xchangeup.vercel.app", // your frontend domain
     credentials: true, // only if you're using cookies/sessions
   })
 );
