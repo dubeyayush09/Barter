@@ -17,6 +17,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && user?._id) {
       const newSocket = io(SOCKET_URL, {
+        query:{userId:user._id},
         auth: {
           token: localStorage.getItem("token"),
         },
@@ -28,7 +29,6 @@ export const SocketProvider = ({ children }) => {
         console.log("Socket connected");
         setIsConnected(true);
       });
-
       newSocket.on("disconnect", () => {
         console.log("Socket disconnected");
         setIsConnected(false);
