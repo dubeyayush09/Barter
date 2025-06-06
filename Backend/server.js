@@ -25,26 +25,19 @@ const PORT = process.env.PORT || 5000
 // Middleware
 // const cors = require("cors");
 
-// app.use(
-//   cors({
-//     origin: "https://barter-chi.vercel.app", // your frontend domain
-//     credentials: true, // only if you're using cookies/sessions
-//   })
-// );
-app.use(cors());
 app.use(
   cors({
-    origin:"http://localhost:5173",
-    credentials:true
+    origin: "https://xchangeup.vercel.app", // your frontend domain
+    credentials: true, // only if you're using cookies/sessions
   })
-)
+);
 app.use(express.json());
 
 
 // MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/creata")
-  .then(() => console.log("MongoDB connect Nahi hua..thik se connection kar KUNJ LODE"))
+  .then(() => console.log("MongoDB connect Nahi hua..thik se kar KUNJ LODE"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
@@ -81,14 +74,11 @@ const onlineUsers = new Map();
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  const userId = socket.handshake.query.userId;
+  const userId = socket.user._id;
+  console.log(`User connected: ${userId}`);
 
-  if (userId) {
-    const existingSockets = onlineUsers.get(userId) || [];
-    onlineUsers.set(userId, [...existingSockets, socket.id]);
-  }
-  console.log("user connected",userId)
-  io.emit("userStatusUpdate", { userId, isOnline: true });
+  // Add user to online users
+  onlineUsers.set(userId, socket.id);
 
   // Join user's room for private messages
   socket.join(userId);
@@ -106,32 +96,18 @@ io.on("connection", (socket) => {
   // Handle getting user's chats
   socket.on("getChats", async (callback) => {
     try {
-      let chats = await Chat.find({
+      const chats = await Chat.find({
         participants: userId,
       })
         .populate("participants", "name avatar status")
         .populate("messages.sender", "name avatar")
         .sort("-updatedAt");
 
-      // Convert Mongoose docs to plain JS objects
-      chats = chats.map((chat) => {
-        const chatObj = chat.toObject();
-
-        // Inject isOnline field based on onlineUsers map
-        chatObj.participants = chatObj.participants.map((participant) => ({
-          ...participant,
-          isOnline: onlineUsers.has(participant._id.toString()),
-        }));
-
-        return chatObj;
-      });
-
       callback({ success: true, chats });
     } catch (error) {
       callback({ success: false, error: error.message });
     }
   });
-  
 
   // Handle getting chat history
   socket.on("getChatHistory", async (chatId, callback) => {
@@ -169,18 +145,13 @@ io.on("connection", (socket) => {
       chat.messages.push(newMessage);
       chat.lastMessage = new Date();
       await chat.save();
-      console.log("message save ho gya");
-
-      await chat.populate("messages.sender");
-      const populatedMessage = chat.messages[chat.messages.length - 1];
-      console.log("message populate ho gya");
 
       // Emit message to all participants
       chat.participants.forEach((participantId) => {
-        const socketIds = onlineUsers.get(participantId.toString()) || [];
-        socketIds.forEach((socketId) => {
-          io.to(socketId).emit("receiveMessage", newMessage);
-        });
+        const participantSocketId = onlineUsers.get(participantId.toString());
+        if (participantSocketId) {
+          io.to(participantSocketId).emit("receiveMessage", newMessage);
+        }
       });
 
       callback({ success: true, message: newMessage });
@@ -245,15 +216,8 @@ io.on("connection", (socket) => {
 
   // Handle user disconnect
   socket.on("disconnect", () => {
-    for (const [userId, sockets] of onlineUsers.entries()) {
-      const updated = sockets.filter((id) => id !== socket.id);
-      if (updated.length > 0) {
-        onlineUsers.set(userId, updated);
-      } else {
-        onlineUsers.delete(userId);
-        io.emit("userStatusUpdate", { userId, isOnline: false });
-      }
-    }
+    console.log(`User disconnected: ${userId}`);
+    onlineUsers.delete(userId);
   });
 });
 
