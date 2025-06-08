@@ -90,7 +90,7 @@ const Navbar = () => {
                   <path d="m7 20.66 1-1.73" />
                 </svg>
                 <span className="ml-2 text-xl font-bold text-primary-500">
-                  Creata
+                  XChangeUp
                 </span>
               </Link>
             </div>
